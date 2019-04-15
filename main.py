@@ -13,7 +13,7 @@ import DDPG
 # Runs policy for X episodes and returns average reward
 def evaluate_policy(policy, eval_episodes=10):
 	avg_reward = 0.
-	for _ in xrange(eval_episodes):
+	for _ in range(eval_episodes):
 		obs = env.reset()
 		done = False
 		while not done:
@@ -23,9 +23,9 @@ def evaluate_policy(policy, eval_episodes=10):
 
 	avg_reward /= eval_episodes
 
-	print "---------------------------------------"
-	print "Evaluation over %d episodes: %f" % (eval_episodes, avg_reward)
-	print "---------------------------------------"
+	print("---------------------------------------")
+	print("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
+	print("---------------------------------------")
 	return avg_reward
 
 
@@ -49,9 +49,9 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	file_name = "%s_%s_%s" % (args.policy_name, args.env_name, str(args.seed))
-	print "---------------------------------------"
-	print "Settings: %s" % (file_name)
-	print "---------------------------------------"
+	print("---------------------------------------")
+	print("Settings: %s" % file_name)
+	print("---------------------------------------")
 
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
@@ -118,6 +118,7 @@ if __name__ == "__main__":
 			if args.expl_noise != 0: 
 				action = (action + np.random.normal(0, args.expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
 
+		print("action--------,",action)
 		# Perform action
 		new_obs, reward, done, _ = env.step(action) 
 		done_bool = 0 if episode_timesteps + 1 == env._max_episode_steps else float(done)
