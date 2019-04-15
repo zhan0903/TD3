@@ -118,7 +118,8 @@ if __name__ == "__main__":
 			if args.expl_noise != 0: 
 				action = (action + np.random.normal(0, args.expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
 
-		print("action--------,",action)
+		print("action--------,", action)
+
 		# Perform action
 		new_obs, reward, done, _ = env.step(action) 
 		done_bool = 0 if episode_timesteps + 1 == env._max_episode_steps else float(done)
