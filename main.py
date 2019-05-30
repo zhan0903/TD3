@@ -92,9 +92,8 @@ if __name__ == "__main__":
 	while total_timesteps < args.max_timesteps:
 		
 		if done: 
-			speed = int(episode_timesteps/(time.time()-time_start))
-
 			if total_timesteps != 0: 
+				speed = int(episode_timesteps/(time.time()-time_start))
 				print("Total T: %d Episode Num: %d Episode T: %d Reward: %f Speed: %d" % (total_timesteps, episode_num, episode_timesteps, episode_reward,speed))
 				if args.policy_name == "TD3":
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
