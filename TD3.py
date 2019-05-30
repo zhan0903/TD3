@@ -4,6 +4,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 import utils
+import time
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -87,9 +88,9 @@ class TD3(object):
 
 
 	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
-
+		time_start = time.time()
+		
 		for it in range(iterations):
-
 			# Sample replay buffer 
 			x, y, u, r, d = replay_buffer.sample(batch_size)
 			state = torch.FloatTensor(x).to(device)
@@ -136,7 +137,9 @@ class TD3(object):
 
 				for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
 					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
+		
+		speed = int(iterations/(time.time()-time_start))
+		print("speed of learner:",speed)
 
 	def save(self, filename, directory):
 		torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))

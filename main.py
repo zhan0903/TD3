@@ -9,6 +9,9 @@ import TD3
 import OurDDPG
 import DDPG
 
+import pybullet_envs
+import time
+
 
 # Runs policy for X episodes and returns average reward
 def evaluate_policy(policy, eval_episodes=10):
@@ -33,7 +36,7 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--policy_name", default="TD3")					# Policy name
-	parser.add_argument("--env_name", default="HalfCheetah-v2")			# OpenAI gym environment name
+	parser.add_argument("--env_name", default="HalfCheetahBulletEnv-v0")			# OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)					# Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--start_timesteps", default=1e4, type=int)		# How many time steps purely random policy is run for
 	parser.add_argument("--eval_freq", default=5e3, type=float)			# How often (time steps) we evaluate
@@ -83,13 +86,16 @@ if __name__ == "__main__":
 	timesteps_since_eval = 0
 	episode_num = 0
 	done = True 
+	time_start = time.time()
+
 
 	while total_timesteps < args.max_timesteps:
 		
 		if done: 
+			speed = int(episode_timesteps/(time.time()-time_start))
 
 			if total_timesteps != 0: 
-				print("Total T: %d Episode Num: %d Episode T: %d Reward: %f") % (total_timesteps, episode_num, episode_timesteps, episode_reward)
+				print("Total T: %d Episode Num: %d Episode T: %d Reward: %f Speed: %d" % (total_timesteps, episode_num, episode_timesteps, episode_reward,speed))
 				if args.policy_name == "TD3":
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
 				else: 
@@ -109,6 +115,7 @@ if __name__ == "__main__":
 			episode_reward = 0
 			episode_timesteps = 0
 			episode_num += 1 
+			time_start = time.time()
 		
 		# Select action randomly or according to policy
 		if total_timesteps < args.start_timesteps:
