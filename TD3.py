@@ -81,6 +81,8 @@ class TD3(object):
 
 		self.max_action = max_action
 		self.speeds = []
+		self.speed_one = []
+		self.speed_two = []
 
 
 	def select_action(self, state):
@@ -100,6 +102,10 @@ class TD3(object):
 			next_state = torch.FloatTensor(y).to(device)
 			done = torch.FloatTensor(1 - d).to(device)
 			reward = torch.FloatTensor(r).to(device)
+
+			time_post_process_experiences = time.time()
+            speed = int(1/(time.time()-time_start))
+            self.speed_one.append(speed)
 
 			# Select action according to policy and add clipped noise 
 			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
@@ -139,11 +145,22 @@ class TD3(object):
 
 				for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
 					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+
+			speed = int(1/(time.time()-time_post_process_experiences))
+            self.speed_two.append(speed)
 		
 		speed = int(iterations/(time.time()-time_start))
 		self.speeds.append(speed)
+		averge_speed_one = int(sum(self.speed_one)/len(self.speed_one))
+		averge_speed_two = int(sum(self.speed_two)/len(self.speed_two))
+
 		averge_speed = int(sum(self.speeds)/len(self.speeds))
+		print("---------------------------------------------------")
 		print("learner averge_speed:{}steps/s ".format(averge_speed))
+		print("learner averge_speed_one:{}steps/s ".format(averge_speed_one))
+		print("learner averge_speed_two:{}steps/s ".format(averge_speed_two))
+		print("---------------------------------------------------")
+
 
 	def save(self, filename, directory):
 		torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
