@@ -104,7 +104,9 @@ if __name__ == "__main__":
 			if timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
 				evaluations.append(evaluate_policy(policy))
-				
+				print("#Learner's mean_throughput for critic:{0},actor:{1},sample_processing:{2}".format(policy.timers["update_critic"].mean_throughput,
+            	policy.timers["update_actor"].mean_throughput,policy.timers["sample_processing"].mean_throughput))
+            
 				if args.save_models: policy.save(file_name, directory="./pytorch_models")
 				np.save("./results/%s" % (file_name), evaluations) 
 			
@@ -123,8 +125,6 @@ if __name__ == "__main__":
 			action = policy.select_action(np.array(obs))
 			if args.expl_noise != 0: 
 				action = (action + np.random.normal(0, args.expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
-
-		# print("action--------,", action)
 
 		# Perform action
 		new_obs, reward, done, _ = env.step(action) 

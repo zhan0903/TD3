@@ -79,6 +79,13 @@ class TD3(object):
 		self.critic_target.load_state_dict(self.critic.state_dict())
 		self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
 
+		self.timers = {
+            k: utils.TimerStat()
+            for k in [
+                "update_critic", "update_actor", "sample_processing"
+            ]
+        }
+
 		self.max_action = max_action
 		self.speeds = []
 		self.speed_one = []
@@ -96,71 +103,56 @@ class TD3(object):
 		# iterations = 1
 		for it in range(iterations):
 			# Sample replay buffer 
-			x, y, u, r, d = replay_buffer.sample(batch_size)
-			state = torch.FloatTensor(x).to(device)
-			action = torch.FloatTensor(u).to(device)
-			next_state = torch.FloatTensor(y).to(device)
-			done = torch.FloatTensor(1 - d).to(device)
-			reward = torch.FloatTensor(r).to(device)
+			with self.timers["sample_processing"]:
+				x, y, u, r, d = replay_buffer.sample(batch_size)
+				state = torch.FloatTensor(x).to(device)
+				action = torch.FloatTensor(u).to(device)
+				next_state = torch.FloatTensor(y).to(device)
+				done = torch.FloatTensor(1 - d).to(device)
+				reward = torch.FloatTensor(r).to(device)
+			self.timers["sample_processing"].push_units_processed(1)
 
-			time_post_process_experiences = time.time()
-			speed = int(1/(time.time()-time_start))
-			self.speed_one.append(speed)
+			with self.timers["update_critic"]:
+				# Select action according to policy and add clipped noise 
+				noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
+				noise = noise.clamp(-noise_clip, noise_clip)
+				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 
-			# Select action according to policy and add clipped noise 
-			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
-			noise = noise.clamp(-noise_clip, noise_clip)
-			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
+				# Compute the target Q value
+				target_Q1, target_Q2 = self.critic_target(next_state, next_action)
+				target_Q = torch.min(target_Q1, target_Q2)
+				target_Q = reward + (done * discount * target_Q).detach()
 
-			# Compute the target Q value
-			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
-			target_Q = torch.min(target_Q1, target_Q2)
-			target_Q = reward + (done * discount * target_Q).detach()
+				# Get current Q estimates
+				current_Q1, current_Q2 = self.critic(state, action)
 
-			# Get current Q estimates
-			current_Q1, current_Q2 = self.critic(state, action)
+				# Compute critic loss
+				critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q) 
 
-			# Compute critic loss
-			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q) 
-
-			# Optimize the critic
-			self.critic_optimizer.zero_grad()
-			critic_loss.backward()
-			self.critic_optimizer.step()
+				# Optimize the critic
+				self.critic_optimizer.zero_grad()
+				critic_loss.backward()
+				self.critic_optimizer.step()
+			self.timers["update_critic"].push_units_processed(1)
 
 			# Delayed policy updates
 			if it % policy_freq == 0:
+				with self.timers["update_actor"]:
+					# Compute actor loss
+					actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
+					
+					# Optimize the actor 
+					self.actor_optimizer.zero_grad()
+					actor_loss.backward()
+					self.actor_optimizer.step()
 
-				# Compute actor loss
-				actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
-				
-				# Optimize the actor 
-				self.actor_optimizer.zero_grad()
-				actor_loss.backward()
-				self.actor_optimizer.step()
+					# Update the frozen target models
+					for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
+						target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-				# Update the frozen target models
-				for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
-					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
-				for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
-					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
-			speed = int(1/(time.time()-time_post_process_experiences))
-			self.speed_two.append(speed)
-		
-		speed = int(iterations/(time.time()-time_start))
-		self.speeds.append(speed)
-		averge_speed_one = int(sum(self.speed_one)/len(self.speed_one))
-		averge_speed_two = int(sum(self.speed_two)/len(self.speed_two))
-
-		averge_speed = int(sum(self.speeds)/len(self.speeds))
-		print("---------------------------------------------------")
-		print("learner averge_speed:{}steps/s ".format(averge_speed))
-		print("learner averge_speed_one:{}steps/s ".format(averge_speed_one))
-		print("learner averge_speed_two:{}steps/s ".format(averge_speed_two))
-		print("---------------------------------------------------")
-
+					for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
+						target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+				self.timers["update_actor"].push_units_processed(1)
 
 	def save(self, filename, directory):
 		torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
