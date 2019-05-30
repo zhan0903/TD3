@@ -112,6 +112,12 @@ class TD3(object):
 				reward = torch.FloatTensor(r).to(device)
 			self.timers["sample_processing"].push_units_processed(1)
 
+			print("state:",state)
+			print("action:",action)
+			print("next_state:",next_state)
+			print("done:",done)
+			print("reward:",reward)
+			
 			with self.timers["update_critic"]:
 				# Select action according to policy and add clipped noise 
 				noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
