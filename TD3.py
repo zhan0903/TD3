@@ -147,7 +147,7 @@ class TD3(object):
 					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
 			speed = int(1/(time.time()-time_post_process_experiences))
-            self.speed_two.append(speed)
+			self.speed_two.append(speed)
 		
 		speed = int(iterations/(time.time()-time_start))
 		self.speeds.append(speed)
