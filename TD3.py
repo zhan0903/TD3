@@ -80,6 +80,7 @@ class TD3(object):
 		self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
 
 		self.max_action = max_action
+		self.speeds = []
 
 
 	def select_action(self, state):
@@ -140,7 +141,9 @@ class TD3(object):
 					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 		
 		speed = int(iterations/(time.time()-time_start))
-		print("speed of learner:",speed)
+		self.speeds.append(speed)
+		averge_speed = int(sum(self.speeds)/len(self.speeds))
+		print("learner averge_speed:{}steps/s ".format(averge_speed))
 
 	def save(self, filename, directory):
 		torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
