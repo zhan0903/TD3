@@ -104,8 +104,8 @@ class TD3(object):
 			reward = torch.FloatTensor(r).to(device)
 
 			time_post_process_experiences = time.time()
-            speed = int(1/(time.time()-time_start))
-            self.speed_one.append(speed)
+			speed = int(1/(time.time()-time_start))
+			self.speed_one.append(speed)
 
 			# Select action according to policy and add clipped noise 
 			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
