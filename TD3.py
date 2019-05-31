@@ -126,7 +126,7 @@ class TD3(object):
 				# Select action according to policy and add clipped noise 
 				noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
 				noise = noise.clamp(-noise_clip, noise_clip)
-			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
+				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 
 			# Compute the target Q value
 			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
