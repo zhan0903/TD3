@@ -126,7 +126,8 @@ class TD3(object):
 			noise = noise.clamp(-noise_clip, noise_clip)
 			with self.timers["update_critic"]:
 				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
-
+			
+			print("next action,",next_action)
 			# Compute the target Q value
 			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
 			target_Q = torch.min(target_Q1, target_Q2)
