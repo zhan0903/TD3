@@ -121,11 +121,10 @@ class TD3(object):
 			# print("reward:",reward)
 
 			# exit(0)
-
-			with self.timers["update_critic"]:
 				# Select action according to policy and add clipped noise 
-				noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
-				noise = noise.clamp(-noise_clip, noise_clip)
+			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
+			noise = noise.clamp(-noise_clip, noise_clip)
+			with self.timers["update_critic"]:
 				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 
 			# Compute the target Q value
