@@ -5,6 +5,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import utils
 import time
+import pdb
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -21,7 +22,6 @@ class Actor(nn.Module):
 		self.l3 = nn.Linear(300, action_dim)
 		
 		self.max_action = max_action
-
 
 	def forward(self, x):
 		x = F.relu(self.l1(x))
@@ -125,6 +125,7 @@ class TD3(object):
 			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
 			noise = noise.clamp(-noise_clip, noise_clip)
 			with self.timers["update_critic"]:
+				pdb.set_trace()
 				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
 			print("next action,",next_action)
@@ -158,7 +159,6 @@ class TD3(object):
 				self.actor_optimizer.step()
 
 				self.timers["update_actor"].push_units_processed(1)
-
 
 				# Update the frozen target models
 				for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
