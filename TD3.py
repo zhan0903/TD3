@@ -97,7 +97,7 @@ class TD3(object):
 		return self.actor(state).cpu().data.numpy().flatten()
 
 
-	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
+	def train(self, replay_buffer, iterations, batch_size=10, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 		iterations = 1
 		time_start = time.time()
 		# iterations = 1
@@ -117,7 +117,9 @@ class TD3(object):
 			print("next_state:",next_state)
 			print("done:",done)
 			print("reward:",reward)
-			
+
+			exit(0)
+
 			with self.timers["update_critic"]:
 				# Select action according to policy and add clipped noise 
 				noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
