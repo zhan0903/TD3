@@ -128,21 +128,21 @@ class TD3(object):
 				noise = noise.clamp(-noise_clip, noise_clip)
 				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 
-				# Compute the target Q value
-				target_Q1, target_Q2 = self.critic_target(next_state, next_action)
-				target_Q = torch.min(target_Q1, target_Q2)
-				target_Q = reward + (done * discount * target_Q).detach()
+			# Compute the target Q value
+			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
+			target_Q = torch.min(target_Q1, target_Q2)
+			target_Q = reward + (done * discount * target_Q).detach()
 
-				# Get current Q estimates
-				current_Q1, current_Q2 = self.critic(state, action)
+			# Get current Q estimates
+			current_Q1, current_Q2 = self.critic(state, action)
 
-				# Compute critic loss
-				critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q) 
+			# Compute critic loss
+			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q) 
 
-				# Optimize the critic
-				self.critic_optimizer.zero_grad()
-				critic_loss.backward()
-				self.critic_optimizer.step()
+			# Optimize the critic
+			self.critic_optimizer.zero_grad()
+			critic_loss.backward()
+			self.critic_optimizer.step()
 			self.timers["update_critic"].push_units_processed(1)
 
 			# Delayed policy updates
