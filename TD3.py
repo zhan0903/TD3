@@ -121,7 +121,7 @@ class TD3(object):
 			# print("reward:",reward)
 
 			# exit(0)
-				# Select action according to policy and add clipped noise 
+			# Select action according to policy and add clipped noise 
 			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
 			noise = noise.clamp(-noise_clip, noise_clip)
 			print("next_state,",next_state)
