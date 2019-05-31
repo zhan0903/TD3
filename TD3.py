@@ -101,7 +101,7 @@ class TD3(object):
 		iterations = 1
 		time_start = time.time()
 		# print("batch_size,",batch_size)
-		# batch_size = 10
+		batch_size = 10
 		# iterations = 1
 		for it in range(iterations):
 			# Sample replay buffer 
