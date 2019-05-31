@@ -156,17 +156,19 @@ class TD3(object):
 					actor_loss.backward()
 					self.actor_optimizer.step()
 
-					# Update the frozen target models
-					for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
-						target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
-					for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
-						target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 				self.timers["update_actor"].push_units_processed(1)
+
+
+				# Update the frozen target models
+				for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
+					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+
+				for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
+					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
 		print("#Learner's mean_throughput for critic:{0},actor:{1},sample_processing:{2}".format(self.timers["update_critic"].mean_throughput,
 		self.timers["update_actor"].mean_throughput,self.timers["sample_processing"].mean_throughput))
-		
+
 		exit(0)
 
 	def save(self, filename, directory):
