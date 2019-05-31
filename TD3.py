@@ -125,8 +125,9 @@ class TD3(object):
 			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
 			noise = noise.clamp(-noise_clip, noise_clip)
 			with self.timers["update_critic"]:
-				pdb.set_trace()
-				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
+				test = self.actor_target(next_state)
+				# pdb.set_trace()
+			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
 			print("next action,",next_action)
 			# Compute the target Q value
