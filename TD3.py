@@ -147,6 +147,7 @@ class TD3(object):
 
 			# Delayed policy updates
 			if it % policy_freq == 0:
+				print("state before compute loss,",state)
 				with self.timers["update_actor"]:
 					# Compute actor loss
 					actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
