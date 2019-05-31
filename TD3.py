@@ -152,9 +152,9 @@ class TD3(object):
 					actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
 					
 					# Optimize the actor 
-					self.actor_optimizer.zero_grad()
-					actor_loss.backward()
-					self.actor_optimizer.step()
+				self.actor_optimizer.zero_grad()
+				actor_loss.backward()
+				self.actor_optimizer.step()
 
 				self.timers["update_actor"].push_units_processed(1)
 
