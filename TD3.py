@@ -128,7 +128,7 @@ class TD3(object):
 
 			with self.timers["update_critic"]:
 				test = self.actor_target(next_state)
-				# pdb.set_trace()
+			pdb.set_trace()
 			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
 			print("next action,",next_action)
