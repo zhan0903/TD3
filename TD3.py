@@ -131,12 +131,15 @@ class TD3(object):
 			# time_end = time.time()
 			# time_slice = time_end-time_start
 			# speed = int(1/time_slice)
-			print(" self.actor_target.state_dict,", self.actor_target.state_dict())
+			# print(" self.actor_target.state_dict,", self.actor_target.state_dict())
+			print("before grad,",self.actor_target.l1.weight.grad)
 
 			with self.timers["update_critic"]:
 				test = self.actor_target(next_state)
 			# pdb.set_trace()
 			print("output:",test)
+			print("after grad,",self.actor_target.l1.weight.grad)
+
 			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
 			print("next action,",next_action)
