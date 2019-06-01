@@ -124,17 +124,18 @@ class TD3(object):
 			# Select action according to policy and add clipped noise 
 			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
 			noise = noise.clamp(-noise_clip, noise_clip)
-			print("next_state,",next_state)
+			print("next_state,",next_state[:2])
 
-			time_start = time.time()
-			test = self.actor_target(next_state)
-			time_end = time.time()
-			time_slice = time_end-time_start
-			speed = int(1/time_slice)
+			# time_start = time.time()
+			# test = self.actor_target(next_state)
+			# time_end = time.time()
+			# time_slice = time_end-time_start
+			# speed = int(1/time_slice)
+			print(" self.actor_target.state_dict,", self.actor_target.state_dict())
 
-			# with self.timers["update_critic"]:
-			# 	test = self.actor_target(next_state)
-			pdb.set_trace()
+			with self.timers["update_critic"]:
+				test = self.actor_target(next_state)
+			# pdb.set_trace()
 			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
 			print("next action,",next_action)
@@ -153,7 +154,7 @@ class TD3(object):
 			self.critic_optimizer.zero_grad()
 			critic_loss.backward()
 			self.critic_optimizer.step()
-			# self.timers["update_critic"].push_units_processed(1)
+			self.timers["update_critic"].push_units_processed(1)
 
 			# Delayed policy updates
 			if it % policy_freq == 0:
