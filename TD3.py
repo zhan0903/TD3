@@ -129,6 +129,7 @@ class TD3(object):
 			time_start = time.time()
 			test = self.actor_target(next_state)
 			time_end = time.time()
+			time_slice = time_end-time_start
 			speed = int(1/time_slice)
 
 			# with self.timers["update_critic"]:
