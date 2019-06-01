@@ -126,8 +126,13 @@ class TD3(object):
 			noise = noise.clamp(-noise_clip, noise_clip)
 			print("next_state,",next_state)
 
-			with self.timers["update_critic"]:
-				test = self.actor_target(next_state)
+			time_start = time.time()
+			test = self.actor_target(next_state)
+			time_end = time.time()
+			speed = int(1/time_slice)
+
+			# with self.timers["update_critic"]:
+			# 	test = self.actor_target(next_state)
 			pdb.set_trace()
 			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
@@ -147,7 +152,7 @@ class TD3(object):
 			self.critic_optimizer.zero_grad()
 			critic_loss.backward()
 			self.critic_optimizer.step()
-			self.timers["update_critic"].push_units_processed(1)
+			# self.timers["update_critic"].push_units_processed(1)
 
 			# Delayed policy updates
 			if it % policy_freq == 0:
