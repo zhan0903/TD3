@@ -104,7 +104,7 @@ if __name__ == "__main__":
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
 			
 			# Evaluate episode
-			if timesteps_since_eval >= args.eval_freq:
+			if  False:#timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
 				evaluations.append(evaluate_policy(policy))
 				print("#Learner's mean_throughput for critic:{0},actor:{1},sample_processing:{2}".format(policy.timers["update_critic"].mean_throughput,
