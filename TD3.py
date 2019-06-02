@@ -135,14 +135,14 @@ class TD3(object):
 			print("before grad,",self.actor_target.l1.weight.grad)
 
 			with self.timers["update_critic"]:
-				test = self.actor_target(next_state)
+				# test = self.actor_target(next_state)
 			# pdb.set_trace()
-			print("output:",test)
-			print("after grad,",self.actor_target.l1.weight.grad)
+			# print("output:",test)
+			# print("after grad,",self.actor_target.l1.weight.grad)
 
-			next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
+				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
-			print("next action,",next_action)
+			# print("next action,",next_action)
 			# Compute the target Q value
 			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
 			target_Q = torch.min(target_Q1, target_Q2)
@@ -184,7 +184,7 @@ class TD3(object):
 		print("#Learner's mean_throughput for critic:{0},actor:{1},sample_processing:{2}".format(self.timers["update_critic"].mean_throughput,
 		self.timers["update_actor"].mean_throughput,self.timers["sample_processing"].mean_throughput))
 
-		exit(0)
+		# exit(0)
 
 	def save(self, filename, directory):
 		torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
