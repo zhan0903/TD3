@@ -14,7 +14,7 @@ import time
 
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, eval_episodes=10):
+def evaluate_policy(policy, eval_episodes=2):
 	avg_reward = 0.
 	for _ in range(eval_episodes):
 		obs = env.reset()
