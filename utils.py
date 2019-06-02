@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-# code from ray/Rllib
+# Code from ray/Rllib
 class TimerStat(object):
     """A running stat for conveniently logging the duration of a code block.
 
