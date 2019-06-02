@@ -78,6 +78,7 @@ if __name__ == "__main__":
 	elif args.policy_name == "DDPG": policy = DDPG.DDPG(state_dim, action_dim, max_action)
 
 	replay_buffer = utils.ReplayBuffer()
+	evaluations = []
 	
 	# Evaluate untrained policy
 	# evaluations = [evaluate_policy(policy)] 
