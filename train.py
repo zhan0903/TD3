@@ -80,7 +80,7 @@ if __name__ == "__main__":
 	replay_buffer = utils.ReplayBuffer()
 	
 	# Evaluate untrained policy
-	evaluations = [evaluate_policy(policy)] 
+	# evaluations = [evaluate_policy(policy)] 
 
 	total_timesteps = 0
 	timesteps_since_eval = 0
