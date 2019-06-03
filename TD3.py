@@ -82,7 +82,7 @@ class TD3(object):
 		self.timers = {
             k: utils.TimerStat()
             for k in [
-                "update_critic", "update_actor", "sample_processing"
+                "update_critic", "update_actor", "sample_processing","learn_on_batch"
             ]
         }
 
@@ -99,92 +99,54 @@ class TD3(object):
 
 	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 		iterations = 1
-		time_start = time.time()
 		# print("batch_size,",batch_size)
-		batch_size = 10
+		batch_size = 100
 		# iterations = 1
 		for it in range(iterations):
 			# Sample replay buffer 
-			with self.timers["sample_processing"]:
+			with self.timers["learn_on_batch"]:
 				x, y, u, r, d = replay_buffer#.sample(batch_size)
 				state = torch.FloatTensor(x).to(device)
 				action = torch.FloatTensor(u).to(device)
 				next_state = torch.FloatTensor(y).to(device)
 				done = torch.FloatTensor(1 - d).to(device)
 				reward = torch.FloatTensor(r).to(device)
-			self.timers["sample_processing"].push_units_processed(1)
-
-			# print("state:",state)
-			# print("action:",action)
-			# print("next_state:",next_state)
-			# print("done:",done)
-			# print("reward:",reward)
-
-			# exit(0)
-			# Select action according to policy and add clipped noise 
-			noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
-			noise = noise.clamp(-noise_clip, noise_clip)
-			print("next_state,",next_state[:2])
-
-			# time_start = time.time()
-			# test = self.actor_target(next_state)
-			# time_end = time.time()
-			# time_slice = time_end-time_start
-			# speed = int(1/time_slice)
-			# print(" self.actor_target.state_dict,", self.actor_target.state_dict())
-			print("before grad,",self.actor_target.l1.weight.grad)
-
-			with self.timers["update_critic"]:
-				# test = self.actor_target(next_state)
-			# pdb.set_trace()
-			# print("output:",test)
-			# print("after grad,",self.actor_target.l1.weight.grad)
-
+				noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
+				noise = noise.clamp(-noise_clip, noise_clip)
 				next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
 			
-			# print("next action,",next_action)
-			# Compute the target Q value
-			target_Q1, target_Q2 = self.critic_target(next_state, next_action)
-			target_Q = torch.min(target_Q1, target_Q2)
-			target_Q = reward + (done * discount * target_Q).detach()
+				target_Q1, target_Q2 = self.critic_target(next_state, next_action)
+				target_Q = torch.min(target_Q1, target_Q2)
+				target_Q = reward + (done * discount * target_Q).detach()
 
-			# Get current Q estimates
-			current_Q1, current_Q2 = self.critic(state, action)
+				# Get current Q estimates
+				current_Q1, current_Q2 = self.critic(state, action)
 
-			# Compute critic loss
-			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q) 
+				# Compute critic loss
+				critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q) 
 
-			# Optimize the critic
-			self.critic_optimizer.zero_grad()
-			critic_loss.backward()
-			self.critic_optimizer.step()
-			self.timers["update_critic"].push_units_processed(1)
+				# Optimize the critic
+				self.critic_optimizer.zero_grad()
+				critic_loss.backward()
+				self.critic_optimizer.step()
 
-			# Delayed policy updates
-			if it % policy_freq == 0:
-				# print("state before compute loss,",state)
-				with self.timers["update_actor"]:
+				# Delayed policy updates
+				if it % policy_freq == 0:
 					# Compute actor loss
 					actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
-					
 					# Optimize the actor 
-				self.actor_optimizer.zero_grad()
-				actor_loss.backward()
-				self.actor_optimizer.step()
+					self.actor_optimizer.zero_grad()
+					actor_loss.backward()
+					self.actor_optimizer.step()
+					# Update the frozen target models
+					for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
+						target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-				self.timers["update_actor"].push_units_processed(1)
-
-				# Update the frozen target models
-				for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
-					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
-				for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
-					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
-		print("#Learner's mean_throughput for critic:{0},actor:{1},sample_processing:{2}".format(self.timers["update_critic"].mean_throughput,
-		self.timers["update_actor"].mean_throughput,self.timers["sample_processing"].mean_throughput))
-
-		# exit(0)
+					for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
+						target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+		
+			self.timers["learn_on_batch"].push_units_processed(1)
+		print("#Learner's mean_throughput for learn_on_batch:{0}".format(self.timers["learn_on_batch"].mean_throughput))
 
 	def save(self, filename, directory):
 		torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
