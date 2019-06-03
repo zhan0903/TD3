@@ -81,7 +81,7 @@ if __name__ == "__main__":
 	# evaluations = []
 	
 	# Evaluate untrained policy
-	# evaluations = [evaluate_policy(policy)] 
+	evaluations = [evaluate_policy(policy)] 
 
 	total_timesteps = 0
 	timesteps_since_eval = 0
@@ -96,10 +96,10 @@ if __name__ == "__main__":
 			if total_timesteps != 0: 
 				speed = int(episode_timesteps/(time.time()-time_start))
 				print("Total T: %d Episode Num: %d Episode T: %d Reward: %f Speed: %d" % (total_timesteps, episode_num, episode_timesteps, episode_reward,speed))
-				sample_batch = replay_buffer.sample(10)
+				# sample_batch = replay_buffer.sample(10)
 
 				if args.policy_name == "TD3":
-					policy.train(sample_batch, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
+					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
 				else: 
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
 			
