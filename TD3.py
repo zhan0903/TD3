@@ -143,7 +143,7 @@ class TD3(object):
                         target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
         
         self.timers["iterations"].push_units_processed(iterations)
-        print("#Learner's mean_throughput for learn_on_batch:{0}".format(self.timers["learn_on_batch"].mean_throughput))
+        print("#Learner's mean_throughput for iterations:{0}".format(self.timers["iterations"].mean_throughput))
 
     def save(self, filename, directory):
         torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
